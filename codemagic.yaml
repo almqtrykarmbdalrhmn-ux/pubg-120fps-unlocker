@@ -11,18 +11,15 @@ workflows:
         script: |
           set -e
           
-          # الانتقال تلقائياً إلى المجلد الفرعي الذي يحتوي على ملفات المشروع إذا لم تكن في المجلد الرئيسي
-          if [ ! -f "settings.gradle" ] && [ ! -f "settings.gradle.kts" ]; then
-            SUBDIR=$(find . -maxdepth 2 -name "settings.gradle*" -exec dirname {} \; | head -n 1)
-            if [ -n "$SUBDIR" ]; then
-              echo "Found project in: $SUBDIR"
-              cd "$SUBDIR"
-            fi
-          fi
-
+          # الانتقال إلى مجلد المشروع الذي تم اكتشافه
+          cd PubgUnlocker
+          
+          # تفعيل خصائص AndroidX تلقائياً لحل المشكلة فوراً
+          echo "android.useAndroidX=true" >> gradle.properties
+          echo "android.enableJetifier=true" >> gradle.properties
+          
           gradle --version
           gradle assembleDebug
 
     artifacts:
       - "**/build/outputs/apk/debug/*.apk"
-    
