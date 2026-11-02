@@ -1,0 +1,13 @@
+workflows:
+  android-workflow:
+    name: Android Workflow
+    max_build_duration: 60
+    environment:
+      android_signing:
+        - debug_keystore
+    scripts:
+      - name: Build APK
+        script: |
+          ./gradlew assembleDebug
+    artifacts:
+      - app/build/outputs/apk/debug/app-debug.apk
