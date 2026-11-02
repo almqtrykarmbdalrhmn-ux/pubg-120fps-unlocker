@@ -1,13 +1,46 @@
+
 workflows:
   android-workflow:
-    name: Android Workflow
+    name: 120 FRAME PRO APK
     max_build_duration: 60
+
     environment:
-      android_signing:
-        - debug_keystore
+      java: 17
+
     scripts:
-      - name: Build APK
+      - name: Download Gradle and build APK
         script: |
-          ./gradlew assembleDebug
+          set -e
+          ROOT_DIR=$PWD
+
+          # تحميل وتثبيت Gradle 8.9
+          wget -q https://services.gradle.org/distributions/gradle-8.9-bin.zip
+          unzip -q gradle-8.9-bin.zip
+
+          # فك ضغط ملف المشروع المضغوط
+          mkdir -p project
+          unzip -q 120-frame-pro.zip -d project
+
+          # العثور على مجلد المشروع الذي يحتوي على ملف البناء بشكل آمن
+          PROJECT_DIR=$(find project -name "build.gradle" -o -name "build.gradle.kts" | head -n 1 | xargs dirname)
+
+          if [ -z "$PROJECT_DIR" ]; then
+            echo "ERROR: Android project was not found in ZIP"
+            exit 1
+          fi
+
+          cd "$PROJECT_DIR"
+
+          export ANDROID_HOME="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
+          export PATH="$ROOT_DIR/gradle-8.9/bin:$PATH"
+
+          # تنفيذ البناء بالاعتماد على Gradle
+          if [ -f "./gradlew" ]; then
+            chmod +x gradlew
+            ./gradlew assembleDebug
+          else
+            gradle assembleDebug
+          fi
+
     artifacts:
-      - app/build/outputs/apk/debug/app-debug.apk
+      - "project/**/build/outputs/apk/debug/*.apk"
